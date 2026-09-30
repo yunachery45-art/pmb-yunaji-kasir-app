@@ -33,6 +33,12 @@
     }
     const oldCash=document.querySelector('.cash-card');
     if(oldCash && oldCash.parentElement!==gate){ gate.insertAdjacentElement('afterend',oldCash); }
+    if(oldCash){
+      const h=oldCash.querySelector('h2'); if(h)h.textContent='Buka Kas';
+      const p=oldCash.querySelector('.muted'); if(p)p.textContent='Kas wajib dibuka sebelum pelayanan, penjualan, dan pengeluaran. Nominal kas awal hanya dapat dilihat oleh PJ/Staff yang membukanya.';
+    }
+    const kasPanel=$$('kasPanel');
+    if(kasPanel){const h=kasPanel.querySelector('h2');if(h)h.textContent='Buka Kas';const p=kasPanel.querySelector('.muted');if(p)p.textContent='PJ/Staff hanya dapat membuka kas. Penutupan dan rekonsiliasi kas dilakukan oleh Admin.';}
     const btn=$$('cashGateOpenBtn');
     if(btn&&!btn.dataset.bound){btn.dataset.bound='1';btn.onclick=()=>{const target=$$('openCashBox');if(target){target.scrollIntoView({behavior:'smooth',block:'center'});const input=$$('openingCash');if(input)setTimeout(()=>input.focus(),350)}}}
   }
