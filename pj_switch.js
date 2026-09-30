@@ -9,14 +9,13 @@
   async function switchPj(){
     try{
       const session=(await db.auth.getSession()).data.session;
-      if(!session?.user?.is_anonymous){
-        if(typeof window.loginKasir==='function'){
-          $('loginView')?.classList.remove('hidden');
-          $('appView')?.classList.add('hidden');
-          return;
-        }
-        throw new Error('Sesi kasir tidak aktif. Silakan masuk ulang.');
+      if(!session?.user){
+        document.getElementById('loginView')?.classList.remove('hidden');
+        document.getElementById('appView')?.classList.add('hidden');
+        if(typeof window.renderStaffChoices==='function')await window.renderStaffChoices();
+        return;
       }
+
       const staff=await rpc('kasir_get_penanggung_jawab');
       if(!staff?.length)throw new Error('Belum ada PJ/Staff aktif.');
       const current=(await rpc('kasir_current_operator'))?.[0];
@@ -66,7 +65,7 @@
     if(document.getElementById('pmbBootFix'))return;
     const s=document.createElement('script');
     s.id='pmbBootFix';
-    s.src='boot_fix.js?v=20261001-1';
+    s.src='boot_fix.js?v=20261001-2';
     s.async=false;
     document.head.appendChild(s);
   }
