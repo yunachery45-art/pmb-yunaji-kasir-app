@@ -1,0 +1,1 @@
+QA redeploy trigger after Supabase PostgREST schema reload and anonymous PJ login permission verification. No application logic change.
