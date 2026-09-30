@@ -12,16 +12,15 @@
   </div>
 </div>
 <div id="appView" class="app-shell hidden">
-<header class="topbar"><div><p class="eyebrow">PMB BIDAN YUNAJI SRI REJEKI</p><h1>Kasir</h1></div><div class="top-actions"><span id="userLabel"></span><span class="status">● Sistem Aktif</span><button id="logoutBtn" class="secondary">Keluar</button></div></header>
-<main class="content"><section class="welcome-card"><div><p class="eyebrow">MENU TRANSAKSI</p><h2>Kasir PMB Yunaji</h2><p>Input pemasukan dan pengeluaran langsung ke database klinik.</p></div></section>
+<header class="topbar"><div><p class="eyebrow">PMB BIDAN YUNAJI SRI REJEKI</p><h1>Kasir</h1></div><div class="top-actions"><span id="userLabel"></span><span id="roleBadge" class="role-badge">Staff</span><span class="status">● Sistem Aktif</span><button id="logoutBtn" class="secondary">Keluar</button></div></header>
+<nav class="nav"><button class="nav-btn active" data-view="kasirView">Kasir</button><button class="nav-btn owner-only hidden" data-view="ownerView">Dashboard Owner</button></nav>
+<main class="content">
+<section id="kasirView" class="view"><section class="welcome-card"><div><p class="eyebrow">MENU TRANSAKSI</p><h2>Kasir PMB Yunaji</h2><p>Input pemasukan dan pengeluaran langsung ke database klinik.</p></div></section>
 <section class="grid"><form class="card" id="transactionForm"><div class="card-head"><p class="eyebrow">INPUT BARU</p><h2>Transaksi Kasir</h2></div>
 <label>Jenis Transaksi<select id="type"><option value="pemasukan">Pemasukan</option><option value="pengeluaran">Pengeluaran</option></select></label>
-<label>Kategori<select id="category" required></select></label>
-<label>Nama Pasien / Keterangan<input id="description" type="text" placeholder="Contoh: Pemeriksaan ANC / Beli ATK" required></label>
-<label>Nominal (Rp)<input id="amount" type="number" min="1" step="1000" placeholder="0" required></label>
-<label>Penanggung Jawab<select id="staff" required></select></label>
-<label>Metode Pembayaran<select id="payment" required></select></label>
-<label>Catatan<input id="note" type="text" placeholder="Opsional"></label>
+<label>Kategori<select id="category" required></select></label><label>Nama Pasien / Keterangan<input id="description" type="text" placeholder="Contoh: Pemeriksaan ANC / Beli ATK" required></label>
+<label>Nominal (Rp)<input id="amount" type="number" min="1" step="1000" placeholder="0" required></label><label>Penanggung Jawab<select id="staff" required></select></label><label>Metode Pembayaran<select id="payment" required></select></label><label>Catatan<input id="note" type="text" placeholder="Opsional"></label>
 <button type="submit">Simpan Transaksi</button><p id="message" class="message"></p></form>
-<section class="card"><div class="card-head"><p class="eyebrow">DASHBOARD</p><h2>Ringkasan Hari Ini</h2></div><div class="summary"><div><span>Pemasukan</span><strong id="income">Rp0</strong></div><div><span>Pengeluaran</span><strong id="expense">Rp0</strong></div><div><span>Saldo Bersih</span><strong id="balance">Rp0</strong></div></div><div class="table-wrap"><table><thead><tr><th>Nomor</th><th>Keterangan</th><th>Nominal</th><th>Status</th></tr></thead><tbody id="transactionList"></tbody></table></div></section></section></main></div>
-<script src="app.js"></script></body></html>
+<section class="card"><div class="card-head"><p class="eyebrow">DASHBOARD</p><h2>Ringkasan Hari Ini</h2></div><div class="summary"><div><span>Pemasukan</span><strong id="income">Rp0</strong></div><div><span>Pengeluaran</span><strong id="expense">Rp0</strong></div><div><span>Saldo Bersih</span><strong id="balance">Rp0</strong></div></div><div class="table-wrap"><table><thead><tr><th>Nomor</th><th>Keterangan</th><th>Nominal</th><th>Status</th></tr></thead><tbody id="transactionList"></tbody></table></div></section></section></section>
+<section id="ownerView" class="view hidden"><section class="welcome-card"><p class="eyebrow">OWNER</p><h2>Dashboard Pemilik</h2><p>Ringkasan keuangan dan kontrol kas klinik.</p></section><section class="owner-grid"><div class="card"><p class="eyebrow">KAS HARI INI</p><h2 id="ownerBalance">Rp0</h2><p id="cashStatus" class="muted">Memuat status kas...</p></div><div class="card"><p class="eyebrow">TRANSAKSI</p><h2 id="ownerCount">0</h2><p class="muted">Transaksi hari ini</p></div></section></section>
+</main></div><script src="app.js"></script></body></html>
