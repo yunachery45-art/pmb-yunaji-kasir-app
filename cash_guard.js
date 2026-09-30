@@ -17,6 +17,7 @@
       .cash-gate-btn{border:0;border-radius:11px;padding:11px 16px;font-weight:800;background:linear-gradient(135deg,#6d3fb3,#9b3be6);color:#fff;cursor:pointer;box-shadow:0 6px 16px rgba(109,63,179,.18)}
       .cash-locked{opacity:.52;position:relative}.cash-locked::after{content:'🔒 Kas belum dibuka';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;background:#fff0f7;color:#a62068;border:1px solid #f2c7dd;border-radius:999px;padding:4px 8px;pointer-events:none}
       .menu-card.cash-locked{cursor:not-allowed}
+      .cash-card #closeCashBox{display:none!important}
       @media(max-width:720px){.cash-gate{padding:14px}.cash-gate-title{font-size:16px}.cash-gate-row{align-items:flex-start}.cash-gate-actions{width:100%}.cash-gate-btn{width:100%}.cash-locked::after{display:none}}
     `;document.head.appendChild(s);
   }
@@ -54,6 +55,8 @@
       form.classList.toggle('cash-locked',!open);
       form.querySelectorAll('input,select,button,textarea').forEach(el=>{el.disabled=!open;});
     });
+    const closeBox=$$('closeCashBox');
+    if(closeBox)closeBox.classList.add('hidden');
   }
 
   async function refresh(){
@@ -79,8 +82,6 @@
   function bindCashButtons(){
     const b=$$('openCashBtn');
     if(b&&!b.dataset.cashGuardRefresh){b.dataset.cashGuardRefresh='1';b.addEventListener('click',()=>setTimeout(refresh,700));}
-    const c=$$('closeCashBtn');
-    if(c&&!c.dataset.cashGuardRefresh){c.dataset.cashGuardRefresh='1';c.addEventListener('click',()=>setTimeout(refresh,700));}
   }
 
   function start(){
