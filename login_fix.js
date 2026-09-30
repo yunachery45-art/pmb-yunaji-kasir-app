@@ -2,22 +2,29 @@
   if(window.__pmbLoginFixInstalled)return;
   window.__pmbLoginFixInstalled=true;
 
-  async function openCashier(staffId, button){
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+  async function ensureKasirSession(){
+    const current=(await db.auth.getSession()).data.session;
+    if(current?.user?.is_anonymous)return current;
+    if(current)await db.auth.signOut({scope:'local'});
+    const auth=await db.auth.signInAnonymously();
+    if(auth.error)throw auth.error;
+    if(!auth.data?.session?.user?.is_anonymous)throw new Error('Sesi anonim kasir tidak berhasil dibuat.');
+    return auth.data.session;
+  }
+
+  async function openCashier(staffId){
     const message=document.getElementById('loginMessage');
     const buttons=[...document.querySelectorAll('#staffChoices .choice-btn')];
     buttons.forEach(b=>b.disabled=true);
     if(message)message.textContent='Membuka sesi kasir...';
     try{
-      const old=(await db.auth.getSession()).data.session;
-      if(old)await db.auth.signOut({scope:'local'});
-
-      const auth=await db.auth.signInAnonymously();
-      if(auth.error)throw auth.error;
-
+      await ensureKasirSession();
       await rpc('kasir_set_operator',{p_staff_id:staffId});
-
+      await wait(50);
       const current=(await rpc('kasir_current_operator'))?.[0];
-      if(!current)throw new Error('Sesi kasir berhasil dibuat tetapi PJ aktif belum terbaca.');
+      if(!current)throw new Error('PJ berhasil dipilih tetapi sesi operator belum terbaca.');
 
       document.getElementById('loginView')?.classList.add('hidden');
       document.getElementById('appView')?.classList.remove('hidden');
@@ -35,12 +42,13 @@
         try{await job();}
         catch(e){console.error('Kasir boot '+label,e);}
       }
+      if(message)message.textContent='';
     }catch(e){
       console.error('Cashier login failed',e);
       if(message)message.textContent='Login gagal: '+(e?.message||e);
-      try{await db.auth.signOut({scope:'local'})}catch{}
       document.getElementById('loginView')?.classList.remove('hidden');
       document.getElementById('appView')?.classList.add('hidden');
+      try{await db.auth.signOut({scope:'local'})}catch{}
     }finally{
       buttons.forEach(b=>b.disabled=false);
     }
@@ -54,7 +62,7 @@
       if(!id)return;
       ev.preventDefault();
       ev.stopImmediatePropagation();
-      openCashier(id,button);
+      openCashier(id);
     },true);
   }
 
