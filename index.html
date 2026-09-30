@@ -4,12 +4,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#6d3fb3">
-  <title>Kasir PMB Yunaji</title>
+  <title>Kasir PMB Yunaji Sri Rejeki</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
-    <h1>Kasir PMB Yunaji Sri Rejeki</h1>
-    <p>Aplikasi kasir sedang dipersiapkan.</p>
-  </main>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PMB BIDAN YUNAJI SRI REJEKI</p>
+        <h1>Kasir</h1>
+      </div>
+      <span class="status">● Sistem Aktif</span>
+    </header>
+
+    <main class="content">
+      <section class="welcome-card">
+        <div>
+          <p class="eyebrow">MENU TRANSAKSI</p>
+          <h2>Selamat datang di Kasir PMB Yunaji</h2>
+          <p>Masukkan transaksi pemasukan atau pengeluaran klinik melalui form di bawah.</p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <form class="card" id="transactionForm">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">INPUT BARU</p>
+              <h2>Transaksi Kasir</h2>
+            </div>
+          </div>
+
+          <label>Jenis Transaksi
+            <select id="type" required>
+              <option value="pemasukan">Pemasukan</option>
+              <option value="pengeluaran">Pengeluaran</option>
+            </select>
+          </label>
+
+          <label>Tanggal
+            <input id="date" type="date" required>
+          </label>
+
+          <label>Nama Pasien / Keterangan
+            <input id="description" type="text" placeholder="Contoh: Pemeriksaan ANC / Beli ATK" required>
+          </label>
+
+          <label>Kategori
+            <select id="category" required>
+              <option value="Pelayanan">Pelayanan</option>
+              <option value="Obat">Obat</option>
+              <option value="Persalinan">Persalinan</option>
+              <option value="Baby Spa">Baby Spa</option>
+              <option value="Imunisasi">Imunisasi</option>
+              <option value="USG">USG</option>
+              <option value="Operasional">Operasional</option>
+              <option value="Belanja">Belanja</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </label>
+
+          <label>Nominal (Rp)
+            <input id="amount" type="number" min="0" step="1000" placeholder="0" required>
+          </label>
+
+          <label>Nama Penanggung Jawab
+            <input id="staff" type="text" placeholder="Nama petugas" required>
+          </label>
+
+          <button type="submit">Simpan Transaksi</button>
+          <p id="message" class="message"></p>
+        </form>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">RINGKASAN</p>
+              <h2>Transaksi Sesi Ini</h2>
+            </div>
+          </div>
+          <div class="summary">
+            <div><span>Pemasukan</span><strong id="income">Rp0</strong></div>
+            <div><span>Pengeluaran</span><strong id="expense">Rp0</strong></div>
+            <div><span>Saldo Bersih</span><strong id="balance">Rp0</strong></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Waktu</th><th>Keterangan</th><th>Nominal</th></tr></thead>
+              <tbody id="transactionList"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
