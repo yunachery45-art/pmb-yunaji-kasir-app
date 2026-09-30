@@ -34,4 +34,5 @@
   }
   window.refreshAdminMaster=refresh;
   document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{mount();refresh()},300));
+  document.addEventListener('pmb-admin-ready',()=>setTimeout(()=>{mount();refresh()},100));
 })();
