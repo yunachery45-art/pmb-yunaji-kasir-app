@@ -62,5 +62,14 @@
     if(side&&!side.dataset.pjSwitchBound){side.dataset.pjSwitchBound='1';side.onclick=switchPj;side.removeAttribute('onclick')}
   }
 
-  window.addEventListener('DOMContentLoaded',()=>{bindSwitch();setTimeout(bindSwitch,300);setTimeout(bindSwitch,1000);setTimeout(bindSwitch,2000)});
+  function loadBootFix(){
+    if(document.getElementById('pmbBootFix'))return;
+    const s=document.createElement('script');
+    s.id='pmbBootFix';
+    s.src='boot_fix.js?v=20261001-1';
+    s.async=false;
+    document.head.appendChild(s);
+  }
+
+  window.addEventListener('DOMContentLoaded',()=>{loadBootFix();bindSwitch();setTimeout(bindSwitch,300);setTimeout(bindSwitch,1000);setTimeout(bindSwitch,2000)});
 })();
