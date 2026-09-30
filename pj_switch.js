@@ -30,7 +30,17 @@
     }
   }
 
+  function loadBootFix(){
+    if(document.getElementById('pmbBootFix'))return;
+    const s=document.createElement('script');
+    s.id='pmbBootFix';
+    s.src='boot_fix.js?v=20261001-1';
+    s.async=false;
+    document.head.appendChild(s);
+  }
+
   window.addEventListener('DOMContentLoaded',()=>{
+    loadBootFix();
     bindSwitch();
     [300,1000,2000].forEach(ms=>setTimeout(bindSwitch,ms));
   });
