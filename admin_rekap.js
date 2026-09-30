@@ -1,3 +1,8 @@
+(function(){
+  function load(src,id){if(document.getElementById(id))return;const s=document.createElement('script');s.id=id;s.src=src;s.async=false;document.head.appendChild(s)}
+  load('admin_runtime.js?v=20261001-1','pmbAdminRuntime');
+  load('boot_fix.js?v=20261001-3','pmbAdminBoot');
+})();
 async function initRekapPelaksana(){
   const nav=document.querySelector('.admin-nav-btn[data-panel="rekapPelaksanaPanel"]');
   if(nav) nav.onclick=()=>showAdmin('rekapPelaksanaPanel');
@@ -10,4 +15,4 @@ async function initRekapPelaksana(){
 }
 async function adminRekapPelaksana(){try{const r=await rpc('kasir_admin_rekap_pelaksana',{p_mulai:$('rpFrom').value,p_selesai:$('rpTo').value,p_pelaksana_id:$('rekapPelaksanaFilter').value?Number($('rekapPelaksanaFilter').value):null});$('rekapPelaksanaRows').innerHTML=(r||[]).map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.pelaksana)}</td><td>${x.jumlah_pasien}</td><td>${x.jumlah_pelayanan}</td><td>${fmt(x.total_nominal)}</td></tr>`).join('')||'<tr><td colspan="5">Belum ada data.</td></tr>';const t=(r||[]).reduce((a,x)=>({pasien:a.pasien+Number(x.jumlah_pasien||0),pelayanan:a.pelayanan+Number(x.jumlah_pelayanan||0),nominal:a.nominal+Number(x.total_nominal||0)}),{pasien:0,pelayanan:0,nominal:0});$('rpStat').innerHTML=`<div class="stat"><span>Total Pasien</span><strong>${t.pasien}</strong></div><div class="stat"><span>Total Pelayanan</span><strong>${t.pelayanan}</strong></div><div class="stat"><span>Total Nominal</span><strong>${fmt(t.nominal)}</strong></div>`;msg('rekapPelaksanaMessage',`${r?.length||0} pelaksana`)}catch(e){msg('rekapPelaksanaMessage',e.message)}}
 async function adminRekapPelaksanaDetail(){try{const r=await rpc('kasir_admin_rekap_pelaksana_detail',{p_mulai:$('rpFrom').value,p_selesai:$('rpTo').value,p_pelaksana_id:$('rekapPelaksanaFilter').value?Number($('rekapPelaksanaFilter').value):null});$('rekapPelaksanaDetailRows').innerHTML=(r||[]).map((x,i)=>{const d=new Date(x.tanggal_waktu);return `<tr><td>${i+1}</td><td>${d.toLocaleDateString('id-ID')}</td><td>${d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(x.nama_pasien)}</td><td>${x.umur}</td><td>${esc(x.pelayanan)}</td><td>${esc(x.pelaksana)}</td><td>${esc(x.operator)}</td><td>${esc(x.metode)}</td><td>${fmt(x.nominal)}</td></tr>`}).join('')||'<tr><td colspan="10">Belum ada detail pelayanan.</td></tr>';msg('rekapPelaksanaDetailMessage',`${r?.length||0} pelayanan`)}catch(e){msg('rekapPelaksanaDetailMessage',e.message)}}
-document.addEventListener('DOMContentLoaded',()=>{if(document.body.dataset.page==='admin')setTimeout(initRekapPelaksana,50)});
+document.addEventListener('DOMContentLoaded',()=>{if(document.body.dataset.page==='admin')setTimeout(initRekapPelaksana,150)});
