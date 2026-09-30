@@ -1,0 +1,37 @@
+(function(){
+  if(document.body.dataset.page!=='admin') return;
+  const q=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  const rpc=(name,args={})=>window.rpc(name,args);
+  const fmt=n=>window.fmt(Number(n)||0);
+  function mount(){
+    const host=q('settingsPanel'); if(!host||q('adminMasterControls')) return;
+    const card=document.createElement('div');card.id='adminMasterControls';card.className='card';
+    card.innerHTML=`<div class="card-head"><p class="eyebrow">DATA MASTER DINAMIS</p><h2>Kategori, Pembayaran & Produk</h2><p class="muted">Gunakan Nonaktif, bukan hapus, agar riwayat transaksi lama tetap aman.</p></div>
+      <div class="grid-two">
+        <div><h3>Kategori Kasir</h3><form id="catMasterForm" class="form-grid"><input type="hidden" id="catId"><label>Nama<input id="catName" required></label><label>Jenis<select id="catKind"><option value="PEMASUKAN">PEMASUKAN / PELAYANAN</option><option value="PENGELUARAN">PENGELUARAN</option></select></label><label>Urutan<input id="catOrder" type="number" value="0"></label><label>Status<select id="catActive"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><div class="full"><button type="submit">Simpan Kategori</button><button type="button" class="secondary" id="catReset">Baru</button><p id="catMsg" class="message"></p></div></form><div class="table-wrap"><table><thead><tr><th>Nama</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="catMasterRows"></tbody></table></div></div>
+        <div><h3>Metode Pembayaran</h3><form id="payMasterForm" class="form-grid"><input type="hidden" id="payId"><label>Nama<input id="payName" required></label><label>Kode<input id="payCode" required></label><label>Urutan<input id="payOrder" type="number" value="0"></label><label>Status<select id="payActive"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><label>Pelunasan<select id="payReceivable"><option value="false">Tidak</option><option value="true">Ya</option></select></label><div class="full"><button type="submit">Simpan Metode</button><button type="button" class="secondary" id="payReset">Baru</button><p id="payMsg" class="message"></p></div></form><div class="table-wrap"><table><thead><tr><th>Nama</th><th>Kode</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="payMasterRows"></tbody></table></div></div>
+      </div>
+      <hr><h3>Produk Penjualan</h3><form id="prodMasterForm" class="form-grid"><input type="hidden" id="prodId"><label>Nama Produk<input id="prodName" required></label><label>Kategori<input id="prodCategory" required></label><label>Harga Jual<input id="prodPrice" type="number" min="0" step="1" required></label><label>Stok<input id="prodStock" type="number" min="0" step="0.01" required></label><label>Status<select id="prodActive"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><div class="full"><button type="submit">Simpan Produk</button><button type="button" class="secondary" id="prodReset">Baru</button><p id="prodMsg" class="message"></p></div></form><div class="table-wrap"><table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="prodMasterRows"></tbody></table></div>`;
+    host.appendChild(card);
+    q('catMasterForm').onsubmit=async e=>{e.preventDefault();try{await rpc('kasir_admin_upsert_kategori',{p_id:q('catId').value?Number(q('catId').value):null,p_nama:q('catName').value.trim(),p_jenis:q('catKind').value,p_aktif:q('catActive').value==='true',p_urutan:Number(q('catOrder').value||0)});q('catMsg').textContent='Kategori tersimpan.';q('catReset').click();await refresh()}catch(e){q('catMsg').textContent=e.message}};
+    q('catReset').onclick=()=>{q('catMasterForm').reset();q('catId').value='';q('catKind').value='PEMASUKAN';q('catActive').value='true';q('catOrder').value='0'};
+    q('payMasterForm').onsubmit=async e=>{e.preventDefault();try{await rpc('kasir_admin_upsert_metode_pembayaran',{p_id:q('payId').value?Number(q('payId').value):null,p_nama:q('payName').value.trim(),p_kode:q('payCode').value.trim(),p_aktif:q('payActive').value==='true',p_butuh_pelunasan:q('payReceivable').value==='true',p_urutan:Number(q('payOrder').value||0)});q('payMsg').textContent='Metode pembayaran tersimpan.';q('payReset').click();await refresh()}catch(e){q('payMsg').textContent=e.message}};
+    q('payReset').onclick=()=>{q('payMasterForm').reset();q('payId').value='';q('payActive').value='true';q('payReceivable').value='false';q('payOrder').value='0'};
+    q('prodMasterForm').onsubmit=async e=>{e.preventDefault();try{await rpc('kasir_admin_upsert_product',{p_id:q('prodId').value||null,p_name:q('prodName').value.trim(),p_category:q('prodCategory').value.trim(),p_selling_price:Number(q('prodPrice').value),p_stock:Number(q('prodStock').value),p_is_active:q('prodActive').value==='true'});q('prodMsg').textContent='Produk tersimpan.';q('prodReset').click();await refresh()}catch(e){q('prodMsg').textContent=e.message}};
+    q('prodReset').onclick=()=>{q('prodMasterForm').reset();q('prodId').value='';q('prodActive').value='true'};
+  }
+  async function refresh(){
+    if(!q('adminMasterControls'))return;
+    try{
+      const c=await rpc('kasir_admin_get_kategori');q('catMasterRows').innerHTML=(c||[]).map(x=>`<tr><td>${esc(x.nama)}</td><td>${esc(x.jenis)}</td><td>${x.aktif?'Aktif':'Nonaktif'}</td><td><button class="secondary cat-edit" data-id="${x.id}">Edit</button></td></tr>`).join('')||'<tr><td colspan="4">Belum ada kategori.</td></tr>';
+      document.querySelectorAll('.cat-edit').forEach(b=>b.onclick=()=>{const x=(c||[]).find(r=>String(r.id)===b.dataset.id);if(!x)return;q('catId').value=x.id;q('catName').value=x.nama;q('catKind').value=x.jenis;q('catActive').value=String(x.aktif);q('catOrder').value=x.urutan});
+      const p=await rpc('kasir_admin_get_metode_pembayaran');q('payMasterRows').innerHTML=(p||[]).map(x=>`<tr><td>${esc(x.nama)}</td><td>${esc(x.kode)}</td><td>${x.aktif?'Aktif':'Nonaktif'}</td><td><button class="secondary pay-edit" data-id="${x.id}">Edit</button></td></tr>`).join('')||'<tr><td colspan="4">Belum ada metode.</td></tr>`;
+      document.querySelectorAll('.pay-edit').forEach(b=>b.onclick=()=>{const x=(p||[]).find(r=>String(r.id)===b.dataset.id);if(!x)return;q('payId').value=x.id;q('payName').value=x.nama;q('payCode').value=x.kode;q('payActive').value=String(x.aktif);q('payReceivable').value=String(x.butuh_pelunasan);q('payOrder').value=x.urutan});
+      const prod=await rpc('kasir_admin_get_produk');q('prodMasterRows').innerHTML=(prod||[]).map(x=>`<tr><td>${esc(x.nama)}</td><td>${esc(x.kategori)}</td><td>${fmt(x.harga)}</td><td>${x.stok}</td><td>${x.aktif?'Aktif':'Nonaktif'}</td><td><button class="secondary prod-edit" data-id="${x.id}">Edit</button></td></tr>`).join('')||'<tr><td colspan="6">Belum ada produk.</td></tr>';
+      document.querySelectorAll('.prod-edit').forEach(b=>b.onclick=()=>{const x=(prod||[]).find(r=>String(r.id)===b.dataset.id);if(!x)return;q('prodId').value=x.id;q('prodName').value=x.nama;q('prodCategory').value=x.kategori;q('prodPrice').value=x.harga;q('prodStock').value=x.stok;q('prodActive').value=String(x.aktif)});
+    }catch(e){console.warn('master refresh',e)}
+  }
+  window.refreshAdminMaster=refresh;
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{mount();refresh()},300));
+})();
