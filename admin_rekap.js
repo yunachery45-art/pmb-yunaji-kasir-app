@@ -3,6 +3,7 @@ async function initRekapPelaksana(){
   if(nav) nav.onclick=()=>showAdmin('rekapPelaksanaPanel');
   $('rekapPelaksanaBtn').onclick=adminRekapPelaksana;
   $('rekapPelaksanaDetailBtn').onclick=adminRekapPelaksanaDetail;
+  const d=today();$('rpFrom').value=d;$('rpTo').value=d;
   const staff=await rpc('kasir_get_penanggung_jawab');
   $('rekapPelaksanaFilter').innerHTML='<option value="">Semua Pelaksana</option>'+(staff||[]).map(x=>`<option value="${x.id}">${esc(x.nama)}</option>`).join('');
   await adminRekapPelaksana();
