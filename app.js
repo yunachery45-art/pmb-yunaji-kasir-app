@@ -58,6 +58,7 @@ async function loadCashStatus(){
     $('openingCash').classList.remove('hidden');
     $('closeCashBtn').classList.add('hidden');
     $('closingCash').classList.add('hidden');
+    $('closingNote').classList.add('hidden');
     return;
   }
   $('cashStatus').textContent=s.status==='OPEN'?'KAS TERBUKA':'KAS DITUTUP';
@@ -71,6 +72,7 @@ async function loadCashStatus(){
   $('openingCash').classList.toggle('hidden',open||!owner);
   $('closeCashBtn').classList.toggle('hidden',!open||!owner);
   $('closingCash').classList.toggle('hidden',!open||!owner);
+  $('closingNote').classList.toggle('hidden',!open||!owner);
 }
 
 async function loadReport(){
@@ -171,13 +173,20 @@ $('openCashBtn').addEventListener('click',async()=>{
 
 $('closeCashBtn').addEventListener('click',async()=>{
   const amount=Number($('closingCash').value||0);
-  if(amount<0){$('cashMessage').textContent='Kas fisik tidak boleh negatif';return}
-  if(!confirm(`Tutup kas dengan kas fisik ${rupiah(amount)}?`))return;
+  const note=$('closingNote').value.trim();
+  if(!Number.isFinite(amount)||amount<0){$('cashMessage').textContent='Kas fisik tidak boleh negatif.';return}
+  const {data:statusData,error:statusError}=await db.rpc('kasir_status_kas');
+  if(statusError){$('cashMessage').textContent='Gagal membaca status kas.';return}
+  const s=Array.isArray(statusData)?statusData[0]:statusData;
+  const expected=Number(s?.kas_sistem||0);
+  if(Math.abs(amount-expected)>0.0001&&!note){$('cashMessage').textContent=`Ada selisih ${rupiah(amount-expected)}. Isi catatan selisih terlebih dahulu.`;$('closingNote').focus();return}
+  if(!confirm(`Tutup kas dengan kas fisik ${rupiah(amount)}?${Math.abs(amount-expected)>0.0001?'\nSelisih: '+rupiah(amount-expected):''}`))return;
   $('cashMessage').textContent='Menutup kas...';
-  const {error}=await db.rpc('kasir_tutup_kas_sesi',{p_tanggal:todayJakarta(),p_kas_fisik:amount,p_catatan:'Ditutup dari aplikasi Kasir PMB Yunaji'});
+  const {error}=await db.rpc('kasir_tutup_kas_sesi',{p_tanggal:todayJakarta(),p_kas_fisik:amount,p_catatan:note||'Ditutup dari aplikasi Kasir PMB Yunaji'});
   if(error){$('cashMessage').textContent=error.message;return}
   $('cashMessage').textContent='Kas berhasil ditutup.';
   $('closingCash').value='';
+  $('closingNote').value='';
   await loadDashboard();
 });
 
