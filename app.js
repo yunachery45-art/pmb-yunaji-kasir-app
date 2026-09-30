@@ -37,7 +37,6 @@ async function loadDashboard(){
     $('income').textContent=rupiah(d.total_pemasukan);
     $('expense').textContent=rupiah(d.total_pengeluaran);
     $('balance').textContent=rupiah(d.saldo_transaksi);
-    $('ownerBalance').textContent=rupiah(d.saldo_transaksi);
   }
   const h=await db.rpc('kasir_riwayat_hari_ini');
   if(h.error){$('message').textContent='Gagal memuat riwayat: '+h.error.message;return}
@@ -54,6 +53,10 @@ async function loadCashStatus(){
   if(!s){
     $('cashStatus').textContent='Belum dibuka';
     $('cashDetail').textContent='Belum ada sesi kas hari ini.';
+    $('ownerBalance').textContent='Rp0';
+    $('systemCash').textContent='Rp0';
+    $('cashIn').textContent='Rp0';
+    $('cashOut').textContent='Rp0';
     $('openCashBtn').classList.remove('hidden');
     $('openingCash').classList.remove('hidden');
     $('closeCashBtn').classList.add('hidden');
@@ -61,9 +64,11 @@ async function loadCashStatus(){
     $('closingNote').classList.add('hidden');
     return;
   }
+  const systemCash=Number(s.kas_sistem||0);
   $('cashStatus').textContent=s.status==='OPEN'?'KAS TERBUKA':'KAS DITUTUP';
-  $('cashDetail').textContent=`Kas awal ${rupiah(s.kas_awal)} • Sistem ${rupiah(s.kas_sistem)}`;
-  $('systemCash').textContent=rupiah(s.kas_sistem);
+  $('cashDetail').textContent=`Kas awal ${rupiah(s.kas_awal)} • Kas sistem ${rupiah(systemCash)}`;
+  $('ownerBalance').textContent=rupiah(systemCash);
+  $('systemCash').textContent=rupiah(systemCash);
   $('cashIn').textContent=rupiah(s.kas_masuk);
   $('cashOut').textContent=rupiah(s.kas_keluar);
   const open=s.status==='OPEN';
@@ -141,12 +146,14 @@ document.querySelectorAll('.nav-btn').forEach(btn=>btn.addEventListener('click',
 $('transactionForm').addEventListener('submit',async e=>{
   e.preventDefault();
   $('message').textContent='Menyimpan...';
+  const nominal=Number($('amount').value);
+  if(!Number.isInteger(nominal)||nominal<1){$('message').textContent='Nominal harus berupa angka bulat minimal Rp1.';return}
   const {error}=await db.rpc('kasir_input_transaksi',{
     p_jenis:$('type').value,
     p_kategori_id:Number($('category').value),
     p_penanggung_jawab_id:Number($('staff').value),
     p_metode_pembayaran_id:Number($('payment').value),
-    p_nominal:Number($('amount').value),
+    p_nominal:nominal,
     p_catatan:$('description').value.trim()+($('note').value.trim()?` — ${$('note').value.trim()}`:'')
   });
   if(error){$('message').textContent=error.message;return}
@@ -162,7 +169,7 @@ $('transactionForm').addEventListener('submit',async e=>{
 
 $('openCashBtn').addEventListener('click',async()=>{
   const amount=Number($('openingCash').value||0);
-  if(amount<0){$('cashMessage').textContent='Kas awal tidak boleh negatif.';return}
+  if(!Number.isInteger(amount)||amount<0){$('cashMessage').textContent='Kas awal harus berupa angka bulat dan tidak boleh negatif.';return}
   $('cashMessage').textContent='Membuka kas...';
   const {error}=await db.rpc('kasir_buka_kas_sesi',{p_tanggal:todayJakarta(),p_kas_awal:amount,p_catatan:'Dibuka dari aplikasi Kasir PMB Yunaji'});
   if(error){$('cashMessage').textContent=error.message;return}
@@ -174,13 +181,16 @@ $('openCashBtn').addEventListener('click',async()=>{
 $('closeCashBtn').addEventListener('click',async()=>{
   const amount=Number($('closingCash').value||0);
   const note=$('closingNote').value.trim();
-  if(!Number.isFinite(amount)||amount<0){$('cashMessage').textContent='Kas fisik tidak boleh negatif.';return}
+  if(!Number.isInteger(amount)||amount<0){$('cashMessage').textContent='Kas fisik harus berupa angka bulat dan tidak boleh negatif.';return}
   const {data:statusData,error:statusError}=await db.rpc('kasir_status_kas');
   if(statusError){$('cashMessage').textContent='Gagal membaca status kas.';return}
   const s=Array.isArray(statusData)?statusData[0]:statusData;
-  const expected=Number(s?.kas_sistem||0);
-  if(Math.abs(amount-expected)>0.0001&&!note){$('cashMessage').textContent=`Ada selisih ${rupiah(amount-expected)}. Isi catatan selisih terlebih dahulu.`;$('closingNote').focus();return}
-  if(!confirm(`Tutup kas dengan kas fisik ${rupiah(amount)}?${Math.abs(amount-expected)>0.0001?'\nSelisih: '+rupiah(amount-expected):''}`))return;
+  if(!s||s.status!=='OPEN'){$('cashMessage').textContent='Kas sudah ditutup atau belum dibuka.';await loadCashStatus();return}
+  const expected=Number(s.kas_sistem||0);
+  const difference=amount-expected;
+  if(Math.abs(difference)>0.0001&&!note){$('cashMessage').textContent=`Ada selisih ${rupiah(difference)}. Isi catatan selisih terlebih dahulu.`;$('closingNote').focus();return}
+  const confirmation=`Tutup kas dengan kas fisik ${rupiah(amount)}?\nKas sistem: ${rupiah(expected)}${Math.abs(difference)>0.0001?'\nSelisih: '+rupiah(difference):'\nSelisih: Rp0'}`;
+  if(!confirm(confirmation))return;
   $('cashMessage').textContent='Menutup kas...';
   const {error}=await db.rpc('kasir_tutup_kas_sesi',{p_tanggal:todayJakarta(),p_kas_fisik:amount,p_catatan:note||'Ditutup dari aplikasi Kasir PMB Yunaji'});
   if(error){$('cashMessage').textContent=error.message;return}
