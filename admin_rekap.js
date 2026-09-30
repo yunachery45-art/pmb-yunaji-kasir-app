@@ -1,6 +1,7 @@
 (function(){
   function load(src,id){if(document.getElementById(id))return;const s=document.createElement('script');s.id=id;s.src=src;s.async=false;document.head.appendChild(s)}
   load('admin_runtime.js?v=20261001-1','pmbAdminRuntime');
+  load('admin_master_ui.js?v=20261001-1','pmbAdminMaster');
   load('boot_fix.js?v=20261001-3','pmbAdminBoot');
 })();
 async function initRekapPelaksana(){
