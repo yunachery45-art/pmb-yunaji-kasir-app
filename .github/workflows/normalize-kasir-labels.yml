@@ -1,0 +1,52 @@
+name: Normalize Kasir Labels
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize visible labels
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          replacements = {
+              'Pilih nama PJ untuk masuk.': 'Pilih nama Kasir untuk masuk.',
+              'MENU PJ KASIR': 'MENU KASIR',
+              'Ganti PJ / Keluar': 'Ganti Kasir / Keluar',
+              'PJ Kasir › ReKAP Saya': 'Kasir › ReKAP Saya',
+              '🔄 Ganti PJ': '🔄 Ganti Kasir',
+              'REKAP SAYA (SEBAGAI PJ/KASIR)': 'REKAP SAYA (SEBAGAI KASIR)',
+              'tanggung jawab PJ/Kasir': 'tanggung jawab Kasir',
+              'sebagai PJ/Kasir dan sebagai Pelaksana': 'sebagai Kasir dan sebagai Pelaksana',
+              'laman PJ/Staff': 'laman Kasir',
+              'PJ/Staff hanya dapat membuka kas.': 'Kasir hanya dapat membuka kas.',
+          }
+          for name in ['index.html', 'pj_switch.js', 'rekap_fix.js', 'app.js']:
+              p=Path(name)
+              if not p.exists():
+                  continue
+              s=p.read_text()
+              old=s
+              for a,b in replacements.items():
+                  s=s.replace(a,b)
+              s=s.replace('Belum ada PJ aktif.', 'Belum ada kasir aktif.')
+              s=s.replace('Belum ada PJ/Staff aktif.', 'Belum ada kasir aktif.')
+              s=s.replace('Ganti / Ambil Alih PJ', 'Ganti / Ambil Alih Kasir')
+              s=s.replace('PJ AKTIF', 'KASIR AKTIF')
+              s=s.replace('Mengganti PJ...', 'Mengganti kasir...')
+              s=s.replace('Gagal mengganti PJ:', 'Gagal mengganti kasir:')
+              if s != old:
+                  p.write_text(s)
+          PY
+      - name: Commit normalized UI
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html pj_switch.js rekap_fix.js app.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'UI: gunakan istilah Kasir tanpa PJ'
+          git push
