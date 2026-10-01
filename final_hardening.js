@@ -5,7 +5,6 @@
   if(page!=='kasir') return;
   const db=window.supabase.createClient(URL,KEY,{auth:{storageKey:'pmb_yunaji_kasir_session',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
   const q=id=>document.getElementById(id);
-  const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   async function rpc(name,args={}){const r=await db.rpc(name,args);if(r.error)throw r.error;return r.data}
   function message(text){const el=q('cashMessage')||q('loginMessage');if(el)el.textContent=text||''}
   function closeModal(){q('finalPjModal')?.remove()}
@@ -32,13 +31,21 @@
       const current=(await rpc('kasir_current_operator'))?.[0];
       if(!staff?.length)throw new Error('Belum ada PJ/Staff aktif.');
       const wrap=document.createElement('div');wrap.id='finalPjModal';wrap.className='handover-modal';
-      wrap.innerHTML='<div class="handover-dialog"><h3>Ganti PJ / Staff</h3><p>Pilih PJ/Staff yang sekarang memegang kas. Kas hari ini tetap satu dan tidak dibuka ulang.</p><select id="finalPjSelect">'+staff.map(x=>'<option value="'+x.id+'" '+(Number(x.id)===Number(current?.staff_id)?'selected':'')+'>'+esc(x.nama)+'</option>').join('')+'</select><div class="dialog-actions"><button id="finalPjCancel" class="secondary">Batal</button><button id="finalPjConfirm" class="cash-gate-btn">Konfirmasi</button></div><p id="finalPjMsg" class="message"></p></div>';
+      wrap.innerHTML='<div class="handover-dialog"><h3>Ganti PJ / Staff</h3><p>Pilih PJ/Staff yang sekarang memegang kas. Kas hari ini tetap satu dan tidak dibuka ulang.</p><select id="finalPjSelect">'+staff.map(x=>'<option value="'+x.id+'" '+(Number(x.id)===Number(current?.staff_id)?'selected':'')+'>'+String(x.nama||'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))+'</option>').join('')+'</select><div class="dialog-actions"><button id="finalPjCancel" class="secondary">Batal</button><button id="finalPjConfirm" class="cash-gate-btn">Konfirmasi</button></div><p id="finalPjMsg" class="message"></p></div>';
       document.body.appendChild(wrap);
       q('finalPjCancel').onclick=closeModal;
       q('finalPjConfirm').onclick=async()=>{try{q('finalPjMsg').textContent='Mengganti PJ...';await chooseStaff(Number(q('finalPjSelect').value));closeModal()}catch(e){q('finalPjMsg').textContent=e.message||String(e)}};
     }catch(e){message(e.message||String(e))}
   }
+  function removeAdminEntry(){
+    document.querySelectorAll('a[href="admin.html"],a[href$="/admin.html"],#adminSideLink').forEach(el=>el.remove());
+    document.querySelectorAll('.side-nav a').forEach(el=>{
+      const text=(el.textContent||'').trim().toLowerCase();
+      if(text==='admin' || text.includes('admin')) el.remove();
+    });
+  }
   function bind(){
+    removeAdminEntry();
     const b=q('switchPjBtn');
     if(b){b.dataset.finalSwitchBound='1';b.onclick=openHandover}
     const side=document.querySelector('.logout-side');
@@ -52,7 +59,9 @@
     const badge=(q('cashBadge')?.textContent||'').trim().toUpperCase();
     if(badge==='TERBUKA') window.renderPjHandover();
   }
+  const observer=new MutationObserver(()=>removeAdminEntry());
   document.addEventListener('DOMContentLoaded',()=>{
+    observer.observe(document.body,{childList:true,subtree:true});
     [50,250,500,1000,1800,3000].forEach(ms=>setTimeout(()=>{bind();ensureHandoverAfterCashGuard()},ms));
   });
 })();
