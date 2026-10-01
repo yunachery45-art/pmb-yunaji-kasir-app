@@ -23,8 +23,8 @@
       wrap.id='pjSwitchModal';
       wrap.className='handover-modal';
       wrap.innerHTML=`<div class="handover-dialog">
-        <h3>Ganti PJ / Staff</h3>
-        <p>Pilih orang yang sekarang memegang kas. Kas hari ini tetap satu dan tidak dibuka ulang.</p>
+        <h3>Ganti Kasir</h3>
+        <p>Pilih kasir yang sekarang memegang kas. Kas hari ini tetap satu dan tidak dibuka ulang.</p>
         <select id="pjSwitchSelect">${staff.map(x=>`<option value="${x.id}" ${Number(x.id)===Number(current?.staff_id)?'selected':''}>${String(x.nama||'')}</option>`).join('')}</select>
         <div class="dialog-actions">
           <button id="pjSwitchCancel" class="secondary">Batal</button>
