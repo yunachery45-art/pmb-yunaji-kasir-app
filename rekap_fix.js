@@ -11,7 +11,7 @@
   function build(){
     const panel=q('rekapPanel'); if(!panel||panel.dataset.rekapV2==='1')return; panel.dataset.rekapV2='1';
     panel.innerHTML=`
-      <div class="card"><div class="card-head"><div class="section-title"><span class="icon">📊</span><div><h3>Rekap Saya</h3><p class="muted">Pisahkan pekerjaan Anda sebagai PJ/Kasir dan sebagai Pelaksana.</p></div></div></div>
+      <div class="card"><div class="card-head"><div class="section-title"><span class="icon">📊</span><div><h3>Rekap Saya</h3><p class="muted">Pisahkan pekerjaan Anda sebagai Kasir dan sebagai Pelaksana.</p></div></div></div>
         <div class="rekap-role-grid">
           <div class="role-card"><div class="role-icon">🧾</div><div><strong>Saya sebagai PJ/Kasir</strong><p>Transaksi yang saya input ke sistem.</p></div><strong id="operatorCount" class="role-count">0</strong></div>
           <div class="role-card"><div class="role-icon">🩺</div><div><strong>Saya sebagai Pelaksana</strong><p>Pelayanan yang saya lakukan kepada pasien.</p></div><strong id="performerCount" class="role-count">0</strong></div>

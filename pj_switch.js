@@ -17,7 +17,7 @@
       }
 
       const staff=await rpc('kasir_get_penanggung_jawab');
-      if(!staff?.length)throw new Error('Belum ada PJ/Staff aktif.');
+      if(!staff?.length)throw new Error('Belum ada kasir aktif.');
       const current=(await rpc('kasir_current_operator'))?.[0];
       const wrap=document.createElement('div');
       wrap.id='pjSwitchModal';
@@ -39,14 +39,14 @@
         const m=document.getElementById('pjSwitchMessage');
         try{
           if(!id)return;
-          m.textContent='Mengganti PJ...';
+          m.textContent='Mengganti kasir...';
           await rpc('kasir_set_operator',{p_staff_id:id});
           const cash=(await rpc('kasir_status_kas_kasir'))?.[0];
           if(cash?.status==='OPEN')await rpc('kasir_ambil_alih_pj',{p_staff_id:id});
           closeSwitchModal();
           if(typeof window.enterKasir==='function')await window.enterKasir();
           else location.reload();
-        }catch(e){m.textContent='Gagal mengganti PJ: '+(e.message||e)}
+        }catch(e){m.textContent='Gagal mengganti kasir: '+(e.message||e)}
       };
     }catch(e){
       const msg=document.getElementById('cashMessage')||document.getElementById('loginMessage');
