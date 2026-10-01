@@ -1,19 +1,15 @@
 (function(){
-  async function filterRekapSaya(){
+  function filterRekapSayaRows(){
     try{
       if(document.body.dataset.page!=='kasir')return;
-      const current=(await window.db?.rpc?.('kasir_current_operator'))?.data?.[0];
-      if(!current)return;
-      const rows=(await window.db?.rpc?.('kasir_rekap_saya_detail'))?.data||[];
-      const activeName=String(current.staff_name||'').trim().toLowerCase();
-      const own=rows.filter(function(x){
-        return String(x.pelaksana||'').trim().toLowerCase()===activeName;
-      });
+      const activeName=String(document.getElementById('operatorLabel')?.textContent||document.getElementById('welcomeName')?.textContent||'').trim().toLowerCase();
       const tbody=document.getElementById('rekapRows');
-      if(tbody)tbody.innerHTML=own.map(function(x){
-        const esc=window.esc||function(v){return String(v??'').replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]})};
-        return '<tr><td>'+esc(x.waktu)+'</td><td>'+esc(x.jenis)+'</td><td>'+esc(x.keterangan)+'</td><td>'+esc(x.pelaksana||'-')+'</td></tr>';
-      }).join('');
+      if(!tbody||!activeName)return;
+      Array.from(tbody.querySelectorAll('tr')).forEach(function(row){
+        const cells=row.querySelectorAll('td');
+        const pelaksana=String(cells[3]?.textContent||'').trim().toLowerCase();
+        row.style.display=(pelaksana===activeName)?'':'none';
+      });
     }catch(e){console.warn('Rekap Saya filter failed',e)}
   }
   function patchRekap(){
@@ -21,7 +17,7 @@
       const original=window.rekap;
       window.rekap=async function(){
         await original();
-        await filterRekapSaya();
+        filterRekapSayaRows();
       };
       window.__pmbRekapPatched=true;
     }
