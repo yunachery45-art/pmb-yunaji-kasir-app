@@ -4,7 +4,7 @@
   const KEY='sb_publishable_2LKsNXHeEemj9wnxr71eyw_ASH4ZFLK';
   const db=window.supabase.createClient(URL,KEY,{auth:{storageKey:'pmb_yunaji_kasir_session',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
   const q=id=>document.getElementById(id);
-  const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>\\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\"':'&quot;',"'":'&#39;'}[c]));
   async function rpc(name,args={}){const r=await db.rpc(name,args);if(r.error)throw r.error;return r.data||[]}
   const empty=(cols,text)=>`<tr><td colspan="${cols}" style="text-align:center" class="muted">${esc(text)}</td></tr>`;
 
@@ -28,7 +28,10 @@
       document.head.appendChild(s);
     }
   }
+  let rendering=false;
   async function render(){
+    if(rendering)return;
+    rendering=true;
     build();
     try{
       const operatorRows=await rpc('kasir_rekap_saya_detail');
@@ -39,21 +42,32 @@
       if(or)or.innerHTML=operatorRows.length?operatorRows.map(x=>`<tr><td>${esc(x.waktu)}</td><td>${esc(x.jenis)}</td><td>${esc(x.keterangan)}</td><td>${esc(x.pelaksana||'-')}</td></tr>`).join(''):empty(4,'Belum ada transaksi yang Anda input hari ini.');
       if(pr)pr.innerHTML=performerRows.length?performerRows.map(x=>`<tr><td>${esc(x.jam)}</td><td>${esc(x.nama_pasien)}</td><td>${esc(x.umur)}</td><td>${esc(x.pelayanan)}</td></tr>`).join(''):empty(4,'Belum ada pelayanan yang Anda lakukan hari ini.');
     }catch(e){console.warn('Rekap V2',e)}
+    finally{rendering=false}
   }
   window.refreshRekapV2=render;
+  document.addEventListener('submit',function(e){
+    if(!e.target||!e.target.id)return;
+    if(['pelayananForm','penjualanForm','pengeluaranForm'].includes(e.target.id)){
+      setTimeout(render,1200);
+      setTimeout(render,2500);
+    }
+  },true);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+  window.addEventListener('focus',render);
   function watchSavedMessages(){
     ['pelayananMessage','penjualanMessage','pengeluaranMessage'].forEach(id=>{
       const el=q(id); if(!el||el.dataset.rekapWatch==='1')return;
       el.dataset.rekapWatch='1';
       new MutationObserver(()=>{
         const t=(el.textContent||'').toLowerCase();
-        if(t.includes('tersimpan'))setTimeout(render,250);
+        if(t.includes('tersimpan')){setTimeout(render,250);setTimeout(render,1200);}
       }).observe(el,{childList:true,subtree:true,characterData:true});
     });
   }
   function boot(){
     [100,700,1800,3000].forEach(ms=>setTimeout(render,ms));
     setTimeout(watchSavedMessages,500);
+    setInterval(()=>{if(!document.hidden)render()},5000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
