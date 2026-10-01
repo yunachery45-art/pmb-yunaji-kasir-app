@@ -11,4 +11,13 @@ function installHistory(){if(document.body.dataset.page!=='kasir')return;const o
 // PJ login and handover are owned exclusively by app.js + final_hardening.js.
 // This file intentionally contains no competing auth/sign-out/reload handlers.
 document.addEventListener('DOMContentLoaded',async function(){injectLink();const s=await settings();setTimeout(function(){loginMockup(s);adminDashboardMockup();installHistory()},220)})
+// Security hardening: when the user opens the Kasir entry, any stale Admin session is cleared.
+// This prevents a previously authenticated Admin session from being reused by direct navigation to admin.html.
+document.addEventListener('DOMContentLoaded',async function(){
+  if(document.body.dataset.page!=='kasir')return;
+  try{
+    const adminDb=window.supabase.createClient(URL,KEY,{auth:{storageKey:'pmb_yunaji_admin_session',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    await adminDb.auth.signOut({scope:'local'});
+  }catch(e){console.warn('Admin session cleanup failed',e)}
+});
 })();
