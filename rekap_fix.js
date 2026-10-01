@@ -31,15 +31,29 @@
   async function render(){
     build();
     try{
-      const summary=(await rpc('kasir_rekap_saya'))?.[0]||{};
       const operatorRows=await rpc('kasir_rekap_saya_detail');
       const performerRows=await rpc('kasir_rekap_saya_logbook');
-      q('operatorCount').textContent=Number(summary.pasien_dilayani||0)+Number(summary.penjualan||0)+Number(summary.pengeluaran||0);
-      q('performerCount').textContent=performerRows.length;
-      q('operatorRows').innerHTML=operatorRows.length?operatorRows.map(x=>`<tr><td>${esc(x.waktu)}</td><td>${esc(x.jenis)}</td><td>${esc(x.keterangan)}</td><td>${esc(x.pelaksana||'-')}</td></tr>`).join(''):empty(4,'Belum ada transaksi yang Anda input hari ini.');
-      q('performerRows').innerHTML=performerRows.length?performerRows.map(x=>`<tr><td>${esc(x.jam)}</td><td>${esc(x.nama_pasien)}</td><td>${esc(x.umur)}</td><td>${esc(x.pelayanan)}</td></tr>`).join(''):empty(4,'Belum ada pelayanan yang Anda lakukan hari ini.');
+      const oc=q('operatorCount'),pc=q('performerCount'),or=q('operatorRows'),pr=q('performerRows');
+      if(oc)oc.textContent=operatorRows.length;
+      if(pc)pc.textContent=performerRows.length;
+      if(or)or.innerHTML=operatorRows.length?operatorRows.map(x=>`<tr><td>${esc(x.waktu)}</td><td>${esc(x.jenis)}</td><td>${esc(x.keterangan)}</td><td>${esc(x.pelaksana||'-')}</td></tr>`).join(''):empty(4,'Belum ada transaksi yang Anda input hari ini.');
+      if(pr)pr.innerHTML=performerRows.length?performerRows.map(x=>`<tr><td>${esc(x.jam)}</td><td>${esc(x.nama_pasien)}</td><td>${esc(x.umur)}</td><td>${esc(x.pelayanan)}</td></tr>`).join(''):empty(4,'Belum ada pelayanan yang Anda lakukan hari ini.');
     }catch(e){console.warn('Rekap V2',e)}
   }
-  function boot(){[100,700,1800,3000].forEach(ms=>setTimeout(render,ms))}
+  window.refreshRekapV2=render;
+  function watchSavedMessages(){
+    ['pelayananMessage','penjualanMessage','pengeluaranMessage'].forEach(id=>{
+      const el=q(id); if(!el||el.dataset.rekapWatch==='1')return;
+      el.dataset.rekapWatch='1';
+      new MutationObserver(()=>{
+        const t=(el.textContent||'').toLowerCase();
+        if(t.includes('tersimpan'))setTimeout(render,250);
+      }).observe(el,{childList:true,subtree:true,characterData:true});
+    });
+  }
+  function boot(){
+    [100,700,1800,3000].forEach(ms=>setTimeout(render,ms));
+    setTimeout(watchSavedMessages,500);
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
