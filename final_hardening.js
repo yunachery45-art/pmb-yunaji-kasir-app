@@ -98,7 +98,9 @@
     if(badge==='TERBUKA') window.renderPjHandover();
   }
   const observer=new MutationObserver(()=>{removeAdminEntry();installSingleEntry()});
-  document.addEventListener('DOMContentLoaded',()=>{
+  document.addEventListener('DOMContentLoaded',async()=>{
+    // A Kasir session must never carry an Admin session. This also closes the direct /admin.html bypass after switching to Kasir.
+    try{await adminDb.auth.signOut({scope:'local'});sessionStorage.removeItem('pmb_yunaji_admin_entry')}catch(e){console.warn('clear admin session',e)}
     observer.observe(document.body,{childList:true,subtree:true});
     [50,250,500,1000,1800,3000].forEach(ms=>setTimeout(()=>{bind();ensureHandoverAfterCashGuard()},ms));
   });
