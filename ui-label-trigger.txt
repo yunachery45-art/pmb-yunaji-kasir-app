@@ -1,0 +1,1 @@
+Temporary trigger for Kasir UI label normalization.
