@@ -3,7 +3,7 @@
   load('admin_runtime.js?v=20261001-1','pmbAdminRuntime');
   load('admin_master_ui.js?v=20261001-1','pmbAdminMaster');
   load('boot_fix.js?v=20261001-3','pmbAdminBoot');
-  load('admin_dashboard_live.js?v=20261001-1','pmbAdminDashboardLive');
+  load('admin_dashboard_live.js?v=20261001-2','pmbAdminDashboardLive');
 })();
 async function initRekapPelaksana(){
   const nav=document.querySelector('.admin-nav-btn[data-panel="rekapPelaksanaPanel"]');
