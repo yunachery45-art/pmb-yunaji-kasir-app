@@ -3,9 +3,7 @@
   load('admin_runtime.js?v=20261001-1','pmbAdminRuntime');
   load('admin_master_ui.js?v=20261001-1','pmbAdminMaster');
   load('boot_fix.js?v=20261001-3','pmbAdminBoot');
-  // Bump the dashboard asset version whenever the dashboard renderer changes.
-  // This prevents browsers from keeping the previous broken chart renderer in cache.
-  load('admin_dashboard_live.js?v=20261001-4','pmbAdminDashboardLive');
+  load('admin_dashboard_live.js?v=20261001-5','pmbAdminDashboardLive');
 })();
 async function initRekapPelaksana(){
   const nav=document.querySelector('.admin-nav-btn[data-panel="rekapPelaksanaPanel"]');
